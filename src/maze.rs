@@ -1,4 +1,4 @@
-use tile::Tile;
+use crate::tile::Tile;
 
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;

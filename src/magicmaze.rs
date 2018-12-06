@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 
-use maze::*;
+use crate::maze::*;
 
 pub struct MagicMaze {
     base_maze: Maze,

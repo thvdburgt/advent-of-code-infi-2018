@@ -2,8 +2,8 @@ mod magicmaze;
 mod maze;
 mod tile;
 
-use magicmaze::MagicMaze;
-use maze::Maze;
+use crate::magicmaze::MagicMaze;
+use crate::maze::Maze;
 
 pub fn solve_part_1(input: &str) -> usize {
     let maze = input.parse::<Maze>().unwrap();
