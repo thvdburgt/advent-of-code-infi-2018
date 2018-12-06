@@ -4,9 +4,11 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::str::FromStr;
 
+pub type Grid2D<T> = Vec<Vec<T>>;
+
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Maze {
-    pub rows: Vec<Vec<Tile>>,
+    pub rows: Grid2D<Tile>,
 }
 
 impl FromStr for Maze {
@@ -68,8 +70,8 @@ impl Maze {
         (self.height() - 1, self.width() - 1)
     }
 
-    pub fn get_fresh_dist_table(&self) -> Vec<Vec<usize>> {
-        let mut dist: Vec<Vec<usize>> = self
+    pub fn get_fresh_dist_table(&self) -> Grid2D<usize> {
+        let mut dist: Grid2D<usize> = self
             .rows
             .iter()
             .map(|row| row.iter().map(|_| std::usize::MAX).collect())
@@ -79,13 +81,13 @@ impl Maze {
         dist
     }
 
-    pub fn distance_to_goal_squared(&self, position: (usize, usize)) -> usize {
+    pub fn distance_to_goal(&self, position: (usize, usize)) -> usize {
         let (row, col) = position;
         let (goal_row, goal_col) = self.goal_position();
 
         let (dy, dx) = (goal_row - row, goal_col - col);
 
-        (dx * dx + dy * dy)
+        ((dx * dx + dy * dy) as f64).sqrt() as usize
     }
 
     pub fn neighbours(&self, position: (usize, usize)) -> Vec<(usize, usize)> {
@@ -114,7 +116,7 @@ impl Maze {
     pub fn solve(&self) -> Option<Vec<(usize, usize)>> {
         let goal = (self.height() - 1, self.width() - 1);
 
-        let mut dist: Vec<Vec<(usize, Option<(usize, usize)>)>> = self
+        let mut dist: Grid2D<(usize, Option<(usize, usize)>)> = self
             .rows
             .iter()
             .map(|row| row.iter().map(|_| (std::usize::MAX, None)).collect())

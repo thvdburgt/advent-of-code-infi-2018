@@ -17,8 +17,7 @@ pub fn solve_part_1(input: &str) -> usize {
                 .enumerate()
                 .map(|(col, c)| if path.contains(&(row, col)) { c } else { ' ' })
                 .collect()
-        })
-        .collect();
+        }).collect();
 
     for row in maze {
         for c in row {

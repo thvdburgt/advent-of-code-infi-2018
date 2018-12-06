@@ -17,10 +17,8 @@ struct SolveState {
 
 impl Ord for SolveState {
     fn cmp(&self, other: &Self) -> Ordering {
-        let score_other =
-            other.steps * other.steps + self.maze.distance_to_goal_squared(other.position);
-        let score_self =
-            self.steps * other.steps + self.maze.distance_to_goal_squared(self.position);
+        let score_other = other.steps + self.maze.distance_to_goal(other.position);
+        let score_self = self.steps + self.maze.distance_to_goal(self.position);
 
         score_other
             .cmp(&score_self)
@@ -107,38 +105,53 @@ impl MagicMaze {
     }
 
     pub fn solve(&self) -> Option<usize> {
-        let goal = (self.base_maze.height() - 1, self.base_maze.width() - 1);
-
         let mut heap = BinaryHeap::new();
-        let mut dists: HashMap<Maze, Vec<Vec<usize>>> = HashMap::new();
+        let mut dists: HashMap<Maze, Grid2D<usize>> = HashMap::new();
 
         heap.push(SolveState {
             maze: self.base_maze.clone(),
             steps: 0,
             position: (0, 0),
         });
-        // while let Some(SolveState { maze, steps, position }) = heap.pop() {
+
+        let goal = (self.base_maze.height() - 1, self.base_maze.width() - 1);
+
+        let mut shortest_path_len = None;
         while let Some(state) = heap.pop() {
-            // check if we are done
+            // check if we arived at the goal
             if state.position == goal {
-                return Some(state.steps);
+                if let Some(path_len) = shortest_path_len {
+                    if state.steps < path_len {
+                        shortest_path_len = Some(state.steps);
+                    }
+                } else {
+                    shortest_path_len = Some(state.steps);
+                }
+                continue;
             }
-            let (row, col) = state.position;
 
             // check if we already found a shorter way
+            if let Some(path_len) = shortest_path_len {
+                // to the goal
+                if state.steps > path_len {
+                    continue;
+                }
+            }
             if let Some(dist) = dists.get(&state.maze) {
+                // or to this square
+                let (row, col) = state.position;
                 if state.steps > dist[row][col] {
                     continue;
                 }
             }
 
-            // create maze on next step
+            // create maze configuration on next step
             let next_maze = self.get_next_maze(&state);
 
             // add possible paths to heap
             let dists = dists
                 .entry(next_maze.clone())
-                .or_insert(next_maze.get_fresh_dist_table());
+                .or_insert_with(|| next_maze.get_fresh_dist_table());
             for (new_row, new_col) in self.neighbours(&state) {
                 let state = SolveState {
                     maze: next_maze.clone(),
@@ -153,6 +166,6 @@ impl MagicMaze {
             }
         }
 
-        None
+        shortest_path_len
     }
 }
